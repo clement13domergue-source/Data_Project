@@ -1,1 +1,17 @@
+import pandas as pd
+
+products = pd.read_csv("data/raw/products.csv")
+customers = pd.read_csv("data/raw/customers.csv")
+orders = pd.read_csv("data/raw/orders.csv")
+
+def audit(df, name):
+    print(f"\n--- {name} ---")
+    print(df.info())
+    print(df.isnull().sum())
+    print(df.duplicated().sum())
+
+audit(products, "PRODUCTS")
+audit(customers, "CUSTOMERS")
+audit(orders, "ORDERS")
+
 
