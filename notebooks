@@ -57,3 +57,5 @@ orders = orders[orders["product_id"].isin(products["product_id"])]
 
 df = orders.merge(customers, on="customer_id", how="left")
 df = df.merge(products, on="product_id", how="left")
+
+df.to_csv("data/processed/clean_dataset.csv", index=False)
