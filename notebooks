@@ -15,3 +15,45 @@ audit(customers, "CUSTOMERS")
 audit(orders, "ORDERS")
 
 
+# supprimer doublons
+products = products.drop_duplicates()
+
+# gérer les valeurs manquantes
+products["price"] = products["price"].fillna(products["price"].median())
+
+products["category"] = products["category"].fillna("unknown")
+
+# enlever valeurs aberrantes (optionnel)
+products = products[products["price"] > 0]
+
+
+customers = customers.drop_duplicates()
+
+# âge manquant → médiane
+customers["age"] = customers["age"].fillna(customers["age"].median())
+
+# pays manquant
+customers["country"] = customers["country"].fillna("unknown")
+
+# vérifier âges absurdes
+customers = customers[(customers["age"] >= 18) & (customers["age"] <= 100)]
+
+
+orders = orders.drop_duplicates()
+
+# supprimer quantités absurdes
+orders = orders[orders["quantity"] > 0]
+
+# supprimer lignes avec product_id manquant
+orders = orders.dropna(subset=["product_id"])
+
+
+# garder uniquement les clients existants
+orders = orders[orders["customer_id"].isin(customers["customer_id"])]
+
+# garder uniquement les produits existants
+orders = orders[orders["product_id"].isin(products["product_id"])]
+
+
+df = orders.merge(customers, on="customer_id", how="left")
+df = df.merge(products, on="product_id", how="left")
