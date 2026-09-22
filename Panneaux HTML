@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panneaux Info Chantier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4da6a6;
+            --text: #333;
+            --light: #f5f5f5;
+            --border: #ddd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: #fff;
+        }
+
+        .public-view {
+            display: block;
+        }
+
+        .admin-view {
+            display: none;
+        }
+
+        .header {
+            background: #fff;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .project-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .meta-item {
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .project-description {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: var(--light);
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .sections-container {
+            padding: 1rem;
+        }
+
+        .section {
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--light);
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: background 0.3s;
+        }
+
+        .section-header:hover {
+            background: #eee;
+        }
+
+        .section-arrow {
+            transition: transform 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .section-arrow.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            padding: 1.5rem;
+            display: grid;
+            gap: 1.5rem;
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s, opacity 0.3s;
+            opacity: 1;
+        }
+
+        .section-content.collapsed {
+            max-height: 0;
+            padding: 0;
+            opacity: 0;
+        }
+
+        .org-card {
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .org-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+        }
+
+        .org-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .org-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0.3rem 0;
+        }
+
+        .org-info a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .lots-section {
+            padding: 1rem;
+        }
+
+        .lot {
+            margin: 1rem 0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .lot-header {
+            background: var(--light);
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .lot-header:hover {
+            background: #eee;
+        }
+
+        .lot-arrow {
+            transition: transform 0.3s;
+        }
+
+        .lot-arrow.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .lot-content {
+            padding: 1.5rem;
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s, opacity 0.3s;
+            opacity: 1;
+        }
+
+        .lot-content.collapsed {
+            max-height: 0;
+            padding: 0;
+            opacity: 0;
+        }
+
+        .site-info-section {
+            background: var(--primary);
+            color: white;
+            padding: 2rem 1rem;
+            margin: 2rem 0 0 0;
+        }
+
+        .site-info-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .site-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            font-size: 0.95rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+        }
+
+        .schedule-list {
+            list-style: none;
+            margin: 0.5rem 0 0 0;
+        }
+
+        .schedule-list li {
+            margin: 0.3rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .schedule-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+
+        .divider {
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 2rem 0;
+        }
+
+        .contact-section {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: 6px;
+        }
+
+        .contact-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info {
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .contact-info a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .admin-header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .admin-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .form-section {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .form-section h2 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(77, 166, 166, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3d8585;
+        }
+
+        .btn-secondary {
+            background: #999;
+            color: white;
+            margin-left: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: #777;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .list-item-content {
+            flex: 1;
+        }
+
+        .list-item-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .list-item-subtitle {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .project-meta {
+                grid-template-columns: 1fr;
+            }
+            .site-info-grid {
+                grid-template-columns: 1fr;
+            }
+            .project-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="public-view" id="publicView">
+        <div class="header">
+            <img id="headerImage" src="https://via.placeholder.com/800x300?text=Project+Image" alt="Project" class="header-image">
+            <h1 class="project-title" id="projectTitle">Chargement...</h1>
+            <div class="project-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Surface SDP</div>
+                    <div class="meta-value" id="projectSurface">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Usage</div>
+                    <div class="meta-value" id="projectUsage">-</div>
+                </div>
+            </div>
+            <div class="project-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Montant</div>
+                    <div class="meta-value" id="projectAmount">-</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Adresse</div>
+                    <div class="meta-value" id="projectAddress">-</div>
+                </div>
+            </div>
+            <div class="project-description" id="projectDescription">Chargement...</div>
+        </div>
+
+        <div class="sections-container" id="sectionsContainer"></div>
+
+        <div class="lots-section" id="lotsSection"></div>
+
+        <div class="site-info-section" id="siteInfoSection"></div>
+
+        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+            <button onclick="requestAdminAccess()" style="background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 50px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 10px rgba(0,0,0,0.2); font-size: 0.9rem;">⚙️ Admin</button>
+        </div>
+    </div>
+
+    <div class="admin-view" id="adminView">
+        <div class="admin-header">
+            <h1>Panneau d'Administration</h1>
+            <button class="logout-btn" onclick="logout()">Déconnexion</button>
+        </div>
+
+        <div class="admin-content">
+            <div id="adminMessage"></div>
+
+            <div class="form-section">
+                <h2>Informations Projet</h2>
+                <div class="form-group">
+                    <label>Titre du Projet</label>
+                    <input type="text" id="adminTitle" placeholder="Ex: MRS6CDO - Sous-station HTB/HTA">
+                </div>
+                <div class="form-group">
+                    <label>Image (URL)</label>
+                    <input type="text" id="adminImage" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Surface SDP</label>
+                    <input type="text" id="adminSurface" placeholder="Ex: 1986 m²">
+                </div>
+                <div class="form-group">
+                    <label>Usage</label>
+                    <input type="text" id="adminUsage" placeholder="Ex: Infrastructure">
+                </div>
+                <div class="form-group">
+                    <label>Montant</label>
+                    <input type="text" id="adminAmount" placeholder="Ex: 20 000 000 € HT">
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="adminAddress" placeholder="Ex: 217 rue Eugène Schneider, 13220, Bouc-Bel-Air">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="adminDescription" placeholder="Description détaillée du projet..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveProjectInfo()">Sauvegarder</button>
+            </div>
+
+            <div class="form-section">
+                <h2>Sections Organisationnelles</h2>
+                <div id="sectionsList"></div>
+                <button class="btn btn-primary" onclick="addSection()">+ Ajouter une Section</button>
+            </div>
+
+            <div class="form-section">
+                <h2>Lots</h2>
+                <div id="lotsList"></div>
+                <button class="btn btn-primary" onclick="addLot()">+ Ajouter un Lot</button>
+            </div>
+
+            <div class="form-section">
+                <h2>Informations Chantier</h2>
+                <div class="form-group">
+                    <label>Début des Travaux</label>
+                    <input type="date" id="adminStartDate">
+                </div>
+                <div class="form-group">
+                    <label>Fin des Travaux</label>
+                    <input type="date" id="adminEndDate">
+                </div>
+                <div class="form-group">
+                    <label>Horaires de Chantier (texte)</label>
+                    <textarea id="adminWorkingHours" placeholder="Lundi: 06:00 - 18:00&#10;Mardi: 06:00 - 18:00..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Nom du Contact</label>
+                    <input type="text" id="adminContactName" placeholder="Ex: Alexandre GEFFARD">
+                </div>
+                <div class="form-group">
+                    <label>Email du Contact</label>
+                    <input type="email" id="adminContactEmail" placeholder="Ex: a.geffard@capingelec.com">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone du Contact</label>
+                    <input type="tel" id="adminContactPhone" placeholder="Ex: 07 89 54 36 19">
+                </div>
+                <button class="btn btn-primary" onclick="saveSiteInfo()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://yhsookslqvztiajdjlir.supabase.com';
+        const SUPABASE_KEY = 'sb_publishable_FCsqi7muguapOuSW7RtOrQ_tnqA3WZA';
+        const ADMIN_PASSWORD = 'MRS6CDO';
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentProjectId = 1;
+        let isAdmin = false;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadProject();
+            checkAdminAccess();
+        });
+
+        async function loadProject() {
+            try {
+                const { data: project } = await supabaseClient
+                    .from('projects')
+                    .select('*')
+                    .eq('id', currentProjectId)
+                    .single();
+
+                if (project) {
+                    document.getElementById('projectTitle').textContent = project.title || 'Projet';
+                    document.getElementById('projectSurface').textContent = project.surface || '-';
+                    document.getElementById('projectUsage').textContent = project.usage || '-';
+                    document.getElementById('projectAmount').textContent = project.amount || '-';
+                    document.getElementById('projectAddress').textContent = project.address || '-';
+                    document.getElementById('projectDescription').textContent = project.description || '';
+                    document.getElementById('headerImage').src = project.image_url || 'https://via.placeholder.com/800x300';
+
+                    await loadSections();
+                    await loadLots();
+                    await loadSiteInfo();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function loadSections() {
+            try {
+                const { data: sections } = await supabaseClient
+                    .from('sections')
+                    .select('*')
+                    .eq('project_id', currentProjectId)
+                    .order('order_index', { ascending: true });
+
+                const container = document.getElementById('sectionsContainer');
+                container.innerHTML = '';
+
+                if (sections && sections.length > 0) {
+                    for (const section of sections) {
+                        const { data: orgs } = await supabaseClient
+                            .from('organizations')
+                            .select('*')
+                            .eq('section_id', section.id)
+                            .order('order_index', { ascending: true });
+
+                        const sectionEl = createSectionElement(section, orgs || []);
+                        container.appendChild(sectionEl);
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function createSectionElement(section, orgs) {
+            const div = document.createElement('div');
+            div.className = 'section';
+
+            let orgsHtml = orgs.map(org => `
+                <div class="org-card">
+                    ${org.logo_url ? `<img src="${org.logo_url}" alt="${org.name}" class="org-logo">` : ''}
+                    <div class="org-name">${org.name}</div>
+                    ${org.address ? `<div class="org-info">${org.address}</div>` : ''}
+                    ${org.phone ? `<div class="org-info">📞 ${org.phone}</div>` : ''}
+                    ${org.website ? `<div class="org-info"><a href="${org.website}" target="_blank">${org.website}</a></div>` : ''}
+                </div>
+            `).join('');
+
+            div.innerHTML = `
+                <div class="section-header" onclick="this.parentElement.querySelector('.section-content').classList.toggle('collapsed'); this.querySelector('.section-arrow').classList.toggle('collapsed')">
+                    <span>${section.name}</span>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    ${orgsHtml}
+                </div>
+            `;
+
+            return div;
+        }
+
+        async function loadLots() {
+            try {
+                const { data: lots } = await supabaseClient
+                    .from('lots')
+                    .select('*')
+                    .eq('project_id', currentProjectId)
+                    .order('order_index', { ascending: true });
+
+                const container = document.getElementById('lotsSection');
+                container.innerHTML = '';
+
+                if (lots && lots.length > 0) {
+                    const title = document.createElement('h2');
+                    title.style.cssText = 'padding: 1rem; margin-bottom: 0;';
+                    title.textContent = 'Lots';
+                    container.appendChild(title);
+
+                    lots.forEach(lot => {
+                        const lotEl = createLotElement(lot);
+                        container.appendChild(lotEl);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function createLotElement(lot) {
+            const div = document.createElement('div');
+            div.className = 'lot';
+
+            div.innerHTML = `
+                <div class="lot-header" onclick="this.parentElement.querySelector('.lot-content').classList.toggle('collapsed'); this.querySelector('.lot-arrow').classList.toggle('collapsed')">
+                    <span>${lot.name}</span>
+                    <span class="lot-arrow">▼</span>
+                </div>
+                <div class="lot-content">
+                    ${lot.description ? `<p>${lot.description}</p>` : '<p>Pas de description</p>'}
+                </div>
+            `;
+
+            return div;
+        }
+
+        async function loadSiteInfo() {
+            try {
+                const { data: siteInfo } = await supabaseClient
+                    .from('site_info')
+                    .select('*')
+                    .eq('project_id', currentProjectId)
+                    .single();
+
+                const container = document.getElementById('siteInfoSection');
+
+                if (siteInfo) {
+                    const scheduleLines = siteInfo.working_hours.split('\n').filter(l => l.trim());
+                    const scheduleHtml = scheduleLines.map(line => `<li>${line}</li>`).join('');
+
+                    container.innerHTML = `
+                        <div style="max-width: 100%; padding: 0 1rem;">
+                            <div class="site-info-title">Informations chantier</div>
+                            <div class="site-info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Début des travaux</div>
+                                    <div class="info-value">${siteInfo.start_date}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Fin des travaux</div>
+                                    <div class="info-value">${siteInfo.end_date}</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Horaire du chantier</div>
+                                <ul class="schedule-list">${scheduleHtml}</ul>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="contact-section">
+                                <div class="contact-title">Une question ?</div>
+                                <div class="contact-info">
+                                    ${siteInfo.contact_name}<br>
+                                    <a href="mailto:${siteInfo.contact_email}">${siteInfo.contact_email}</a><br>
+                                    ${siteInfo.contact_phone}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function requestAdminAccess() {
+            const password = prompt('Mot de passe admin:');
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                showAdminPanel();
+            } else if (password !== null) {
+                alert('Mot de passe incorrect');
+            }
+        }
+
+        function checkAdminAccess() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('admin') === 'true') {
+                isAdmin = true;
+                showAdminPanel();
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('publicView').style.display = 'none';
+            document.getElementById('adminView').style.display = 'block';
+            loadAdminData();
+        }
+
+        function logout() {
+            isAdmin = false;
+            document.getElementById('publicView').style.display = 'block';
+            document.getElementById('adminView').style.display = 'none';
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        async function loadAdminData() {
+            try {
+                const { data: project } = await supabaseClient
+                    .from('projects')
+                    .select('*')
+                    .eq('id', currentProjectId)
+                    .single();
+
+                if (project) {
+                    document.getElementById('adminTitle').value = project.title || '';
+                    document.getElementById('adminImage').value = project.image_url || '';
+                    document.getElementById('adminSurface').value = project.surface || '';
+                    document.getElementById('adminUsage').value = project.usage || '';
+                    document.getElementById('adminAmount').value = project.amount || '';
+                    document.getElementById('adminAddress').value = project.address || '';
+                    document.getElementById('adminDescription').value = project.description || '';
+                }
+
+                await loadAdminSections();
+                await loadAdminLots();
+                await loadAdminSiteInfo();
+            } catch (error) {
+                showAdminMessage('Erreur lors du chargement', 'error');
+            }
+        }
+
+        async function saveProjectInfo() {
+            try {
+                const { error } = await supabaseClient
+                    .from('projects')
+                    .update({
+                        title: document.getElementById('adminTitle').value,
+                        image_url: document.getElementById('adminImage').value,
+                        surface: document.getElementById('adminSurface').value,
+                        usage: document.getElementById('adminUsage').value,
+                        amount: document.getElementById('adminAmount').value,
+                        address: document.getElementById('adminAddress').value,
+                        description: document.getElementById('adminDescription').value,
+                    })
+                    .eq('id', currentProjectId);
+
+                if (error) throw error;
+                showAdminMessage('Informations sauvegardées!', 'success');
+                await loadProject();
+            } catch (error) {
+                showAdminMessage('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function loadAdminSections() {
+            try {
+                const { data: sections } = await supabaseClient
+                    .from('sections')
+                    .select('*')
+                    .eq('project_id', currentProjectId)
+                    .order('order_index', { ascending: true });
+
+                const container = document.getElementById('sectionsList');
+                container.innerHTML = '';
+
+                if (sections && sections.length > 0) {
+                    for (const section of sections) {
+                        const { data: orgs } = await supabaseClient
+                            .from('organizations')
+                            .select('*')
+                            .eq('section_id', section.id)
+                            .order('order_index', { ascending: true });
+
+                        const sectionDiv = document.createElement('div');
+                        sectionDiv.style.cssText = 'margin-bottom: 1.5rem; padding: 1rem; background: white; border: 1px solid #ddd; border-radius: 4px;';
+
+                        let orgsHtml = orgs.map(org => `
+                            <div class="list-item">
+                                <div class="list-item-content">
+                                    <div class="list-item-title">${org.name}</div>
+                                    <div class="list-item-subtitle">${org.address || '-'}</div>
+                                </div>
+                                <button class="btn btn-small btn-danger" onclick="deleteOrg(${org.id})">Supprimer</button>
+                            </div>
+                        `).join('');
+
+                        sectionDiv.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <input type="text" value="${section.name}" id="sectionName_${section.id}" style="flex: 1; padding: 0.5rem; margin-right: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                <button class="btn btn-small btn-secondary" onclick="updateSectionName(${section.id})">Renommer</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteSection(${section.id})">Supprimer</button>
+                            </div>
+                            <div style="margin-bottom: 1rem;">${orgsHtml}</div>
+                            <button class="btn btn-small btn-primary" onclick="addOrganization(${section.id})">+ Org.</button>
+                        `;
+
+                        container.appendChild(sectionDiv);
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function loadAdminLots() {
+            try {
+                const { data: lots } = await supabaseClient
+                    .from('lots')
+                    .select('*')
+                    .eq('project_id', currentProjectId)
+                    .order('order_index', { ascending: true });
+
+                const container = document.getElementById('lotsList');
+                container.innerHTML = '';
+
+                if (lots && lots.length > 0) {
+                    lots.forEach(lot => {
+                        const lotDiv = document.createElement('div');
+                        lotDiv.className = 'list-item';
+
+                        lotDiv.innerHTML = `
+                            <div class="list-item-content">
+                                <div class="list-item-title">${lot.name}</div>
+                                <div class="list-item-subtitle">${lot.description || 'Pas de description'}</div>
+                            </div>
+                            <button class="btn btn-small btn-danger" onclick="deleteLot(${lot.id})">Supprimer</button>
+                        `;
+
+                        container.appendChild(lotDiv);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function loadAdminSiteInfo() {
+            try {
+                const { data: siteInfo } = await supabaseClient
+                    .from('site_info')
+                    .select('*')
+                    .eq('project_id', currentProjectId)
+                    .single();
+
+                if (siteInfo) {
+                    document.getElementById('adminStartDate').value = siteInfo.start_date || '';
+                    document.getElementById('adminEndDate').value = siteInfo.end_date || '';
+                    document.getElementById('adminWorkingHours').value = siteInfo.working_hours || '';
+                    document.getElementById('adminContactName').value = siteInfo.contact_name || '';
+                    document.getElementById('adminContactEmail').value = siteInfo.contact_email || '';
+                    document.getElementById('adminContactPhone').value = siteInfo.contact_phone || '';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function saveSiteInfo() {
+            try {
+                const { error } = await supabaseClient
+                    .from('site_info')
+                    .update({
+                        start_date: document.getElementById('adminStartDate').value,
+                        end_date: document.getElementById('adminEndDate').value,
+                        working_hours: document.getElementById('adminWorkingHours').value,
+                        contact_name: document.getElementById('adminContactName').value,
+                        contact_email: document.getElementById('adminContactEmail').value,
+                        contact_phone: document.getElementById('adminContactPhone').value,
+                    })
+                    .eq('project_id', currentProjectId);
+
+                if (error) throw error;
+                showAdminMessage('Infos chantier sauvegardées!', 'success');
+                await loadProject();
+            } catch (error) {
+                showAdminMessage('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function addSection() {
+            const name = prompt('Nom de la section:');
+            if (name) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('sections')
+                        .insert({
+                            project_id: currentProjectId,
+                            name: name,
+                            order_index: 0
+                        });
+
+                    if (error) throw error;
+                    await loadAdminSections();
+                    await loadProject();
+                } catch (error) {
+                    showAdminMessage('Erreur: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function updateSectionName(sectionId) {
+            const newName = document.getElementById(`sectionName_${sectionId}`).value;
+            try {
+                const { error } = await supabaseClient
+                    .from('sections')
+                    .update({ name: newName })
+                    .eq('id', sectionId);
+
+                if (error) throw error;
+                await loadAdminSections();
+                await loadProject();
+            } catch (error) {
+                showAdminMessage('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteSection(sectionId) {
+            if (confirm('Supprimer cette section?')) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('sections')
+                        .delete()
+                        .eq('id', sectionId);
+
+                    if (error) throw error;
+                    await loadAdminSections();
+                    await loadProject();
+                } catch (error) {
+                    showAdminMessage('Erreur: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function addOrganization(sectionId) {
+            const name = prompt('Nom de l\'organisation:');
+            if (name) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('organizations')
+                        .insert({
+                            section_id: sectionId,
+                            name: name,
+                            order_index: 0
+                        });
+
+                    if (error) throw error;
+                    await loadAdminSections();
+                    await loadProject();
+                } catch (error) {
+                    showAdminMessage('Erreur: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function deleteOrg(orgId) {
+            if (confirm('Supprimer cette organisation?')) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('organizations')
+                        .delete()
+                        .eq('id', orgId);
+
+                    if (error) throw error;
+                    await loadAdminSections();
+                    await loadProject();
+                } catch (error) {
+                    showAdminMessage('Erreur: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function addLot() {
+            const name = prompt('Nom du lot:');
+            if (name) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('lots')
+                        .insert({
+                            project_id: currentProjectId,
+                            name: name,
+                            description: '',
+                            order_index: 0
+                        });
+
+                    if (error) throw error;
+                    await loadAdminLots();
+                    await loadProject();
+                } catch (error) {
+                    showAdminMessage('Erreur: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function deleteLot(lotId) {
+            if (confirm('Supprimer ce lot?')) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('lots')
+                        .delete()
+                        .eq('id', lotId);
+
+                    if (error) throw error;
+                    await loadAdminLots();
+                    await loadProject();
+                } catch (error) {
+                    showAdminMessage('Erreur: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function showAdminMessage(msg, type) {
+            const container = document.getElementById('adminMessage');
+            container.innerHTML = `<div class="${type === 'error' ? 'error' : 'success'}">${msg}</div>`;
+            setTimeout(() => container.innerHTML = '', 3000);
+        }
+    </script>
+</body>
+</html>
